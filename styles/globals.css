@@ -3,12 +3,12 @@
 @tailwind utilities;
 
   @font-face {
-    font-family: 'GameGirl';
-    src: url('../public/GameGirl.ttf');
+    font-family: 'gamegirl';
+    src: url('../public/gamegirl.ttf');
     font-weight: 400;
     font-style: normal;
   }
 
 * {
-  font-family: 'GameGirl', serif;
+  font-family: 'gamegirl', serif;
 }
