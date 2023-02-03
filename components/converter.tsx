@@ -13,6 +13,30 @@ export default function Converter() {
     const onMouseEnter = () => setIsHovered(true);
     const onMouseLeave = () => setIsHovered(false);
     
+
+    const checkLink = async (options:any) => {
+      await fetch(`https://youtube-mp36.p.rapidapi.com/dl?id=${url}`, options)
+      .then(response => response.json())
+      .then(response => {
+        if (response.status === 'processing') {
+          console.log('processing')
+          setTimeout(checkLink, 1000);
+        } else {
+          console.log(response.link)
+          setLink(response.link);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = link;
+          a.download = 'file.mp3';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+      })
+      .catch(err => console.error(err));
+    }
+
+
     const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const link = event.target.value
         const myregexp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -26,7 +50,6 @@ export default function Converter() {
           setUrl('na');
         }
           
-
     }
 
     const handleUrlClick = async (event: React.FormEvent) => {
@@ -40,23 +63,9 @@ export default function Converter() {
       };
       
       if (valid) {
-        fetch(`https://youtube-mp36.p.rapidapi.com/dl?id=${url}`, options)
-        .then(response => response.json())
-        .then(response => setLink(response.link))
-        .then(() => {
-          const a = document.createElement('a');
-          a.style.display = 'none';
-          a.href = link;
-          a.download = 'file.mp3';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        })
-        .catch(err => console.error(err));
-      }
-
-
+        checkLink(options)
     }
+  }
 
     return (
         <main className="mt-40 text-white h-full items-center"> 
