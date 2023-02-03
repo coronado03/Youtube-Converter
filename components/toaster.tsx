@@ -1,7 +1,12 @@
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function Toaster({ popup }){
+
+interface Props {
+  popup: boolean;
+}
+
+const Toaster: React.FC<Props> =({ popup }) => {
 
 
   if (popup) {
