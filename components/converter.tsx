@@ -1,6 +1,7 @@
-import { useState } from "react"
+import { useState } from "react";
 import { BsDownload } from "react-icons/bs";
 import Toaster from "@/components/toaster"
+import axios from 'axios';
 
 export default function Converter() {
 
@@ -15,26 +16,30 @@ export default function Converter() {
     
 
     const checkLink = async (options:any) => {
-      await fetch(`https://youtube-mp36.p.rapidapi.com/dl?id=${url}`, options)
-      .then(response => response.json())
-      .then(response => {
-        if (response.status === 'processing') {
-          console.log('processing')
-          setTimeout(checkLink, 1000);
+      axios.request(options).then (response => {
+        if (String(response.status) === "processing") {
+          console.log("Response status is processing");
+        } else if (response.data) {
+          setTimeout(function(){            
+            setLink(response.data.link);
+            console.log(link);
+            handleDownloadClick();;
+          }, 1000);
         } else {
-          console.log(response.link)
-          setLink(response.link);
-          const a = document.createElement('a');
-          a.style.display = 'none';
-          a.href = link;
-          a.download = 'file.mp3';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
+          console.log("No data received in response");
         }
-      })
-      .catch(err => console.error(err));
+      }).catch(error => {
+        console.error(error);
+      });
     }
+
+    const handleDownloadClick = () => {
+      // Trigger the download of the file
+      const downloadLink = document.createElement("a");
+      downloadLink.href = link;
+      downloadLink.download = `${url}.mp3`;
+      downloadLink.click();
+  };
 
 
     const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,6 +61,8 @@ export default function Converter() {
       event.preventDefault();
       const options = {
         method: 'GET',
+        url: 'https://youtube-mp36.p.rapidapi.com/dl',
+        params: {id: url},
         headers: {
           'X-RapidAPI-Key': '8b043c5416msh840099695e0a4a3p12e1e6jsne8d647794687',
           'X-RapidAPI-Host': 'youtube-mp36.p.rapidapi.com'
