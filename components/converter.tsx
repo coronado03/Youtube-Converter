@@ -6,7 +6,7 @@ import axios from 'axios';
 export default function Converter() {
 
     const [url, setUrl] = useState<string>('');
-    const [link, setLink] = useState<string>('');
+    const [link, setLink] = useState<string | null>(null);
     const [isHovering, setIsHovered] = useState<boolean>(false);
     const [valid, setValid] = useState<boolean>(false);
 
@@ -15,17 +15,23 @@ export default function Converter() {
     const onMouseLeave = () => setIsHovered(false);
     
 
+ 
     const checkLink = async (options:any) => {
       axios.request(options).then (response => {
-        if (String(response.status) === "processing") {
-          console.log("Response status is processing");
-        } else if (response.data) {
-          setTimeout(function(){            
-            setLink(response.data.link);
-            console.log(link);
-            handleDownloadClick();;
+        if (response.data.status === "processing") {
+          setTimeout(function(){  
+            checkLink(options)          
           }, 1000);
-        } else {
+        } 
+        
+        else if (response.data) {         
+            console.log(response.data)
+            setLink(response.data.link);
+            if (link){
+              handleDownloadClick();
+            }       
+        } 
+        else {
           console.log("No data received in response");
         }
       }).catch(error => {
@@ -36,6 +42,7 @@ export default function Converter() {
     const handleDownloadClick = () => {
       // Trigger the download of the file
       const downloadLink = document.createElement("a");
+      downloadLink.style.display = 'none';
       downloadLink.href = link;
       downloadLink.download = `${url}.mp3`;
       downloadLink.click();
