@@ -3,6 +3,17 @@ import { BsDownload } from "react-icons/bs";
 import Toaster from "@/components/toaster"
 import axios from 'axios';
 
+
+type RequestOptions = {
+  method: string;
+  url: string;
+  params: { id: string };
+  headers: {
+    'X-RapidAPI-Key': string;
+    'X-RapidAPI-Host': string;
+  };
+}
+
 export default function Converter() {
 
     const [url, setUrl] = useState<string>('');
@@ -10,35 +21,35 @@ export default function Converter() {
     const [isHovering, setIsHovered] = useState<boolean>(false);
     const [valid, setValid] = useState<boolean>(false);
 
+    const [ready, setReady] = useState<boolean>(false);
     
     const onMouseEnter = () => setIsHovered(true);
     const onMouseLeave = () => setIsHovered(false);
     
 
-    const checkLink = async (options:any) => {
-      axios.request(options).then (response => {
-        if (String(response.status) === "processing") {
-          console.log("Response status is processing");
-        } else if (response.data) {
-          setTimeout(function(){            
-            setLink(response.data.link);
-            console.log(link);
-            handleDownloadClick();;
-          }, 1000);
-        } else {
-          console.log("No data received in response");
-        }
-      }).catch(error => {
-        console.error(error);
-      });
+    const handleResponse = async (options:RequestOptions) => {
+      const response = await axios.request(options)
+      if (response.data.status === "ok") 
+      { 
+        console.log('ok')
+        console.log(response.data)
+        handleDownload(response.data.link);
+      }
+      else {
+        console.log('process')
+        console.log(response.data)
+        setTimeout(()=>{
+          console.log('retrying')
+          handleResponse(options);
+        }, 3000)
+      }
     }
 
-    const handleDownloadClick = () => {
-      // Trigger the download of the file
-      const downloadLink = document.createElement("a");
-      downloadLink.href = link;
-      downloadLink.download = `${url}.mp3`;
-      downloadLink.click();
+    const handleDownload = (responseLink: string) => {
+        const downloadLink = document.createElement("a");
+        downloadLink.href = responseLink;
+        downloadLink.download = `${url}.mp3`;
+        downloadLink.click();
   };
 
 
@@ -57,7 +68,7 @@ export default function Converter() {
           
     }
 
-    const handleUrlClick = async (event: React.FormEvent) => {
+    const handleFormSubmit = async (event: React.FormEvent) => {
       event.preventDefault();
       const options = {
         method: 'GET',
@@ -70,7 +81,7 @@ export default function Converter() {
       };
       
       if (valid) {
-        checkLink(options)
+        handleResponse(options)
     }
   }
 
@@ -79,9 +90,11 @@ export default function Converter() {
         <Toaster popup={valid}/>
               
         <h1 className="text-center text-4xl">Youtube MP3 Converter</h1>
-        <form className="flex flex-col mt-12 w-screen justify-center" onSubmit={handleUrlClick}>
+        <form className="flex flex-col mt-12 w-screen justify-center"
+         onSubmit={handleFormSubmit}>
             <div className="flex flex-row gap-x-4 justify-center">
-              <input className="border text-black border-black rounded-lg hover:outline hover:outline-4 transition-all	ease-in" placeholder="INSERT URL" onChange={handleUrlChange}/>
+              <input className="border text-black border-black rounded-lg hover:outline hover:outline-4 transition-all	ease-in" placeholder="INSERT URL" 
+              onChange={handleUrlChange}/>
               <button className="flex flex-row items-center gap-x-2 bg-white rounded-md text-[#CD0404] py-3 px-2 outline-black hover:outline hover:outline-4 transition-all	ease-in" 
               type="submit" 
               onMouseEnter={onMouseEnter}
